@@ -6,14 +6,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = process.env.API_KEY;
-const API_LOGIN = process.env.API_LOGIN;
-const ACCOUNT_ID = process.env.ACCOUNT_ID;
+// Credenciales de PayU (Producción)
+const API_KEY = "TU_API_KEY";
+const API_LOGIN = "TU_API_LOGIN";
+const ACCOUNT_ID = "1035642"; // Tu account ID
 
-app.post("/api/crear-suscripcion", async (req, res) => {
-  const { fullName, email, cardNumber, expMonth, expYear } = req.body;
+// Endpoint para crear token y suscripción
+app.post("/crear-suscripcion", async (req, res) => {
+  const { fullName, email, cardNumber, expMonth, expYear, cvv } = req.body;
 
   try {
+    // 1. Crear token de tarjeta
     const tokenResponse = await fetch("https://api.payulatam.com/payments-api/4.0/service.cgi", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -39,6 +42,7 @@ app.post("/api/crear-suscripcion", async (req, res) => {
 
     const tokenId = tokenData.creditCardToken.creditCardTokenId;
 
+    // 2. Crear suscripción
     const subscriptionResponse = await fetch("https://api.payulatam.com/payments-api/rest/v4.9/subscriptions", {
       method: "POST",
       headers: {
