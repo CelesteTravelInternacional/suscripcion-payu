@@ -17,7 +17,7 @@ app.post("/crear-suscripcion", async (req, res) => {
 
   try {
     // 1. Crear token de tarjeta
-    const tokenResponse = await fetch("https://api.payulatam.com/payments-api/4.0/service.cgi", {
+    const tokenResponse = await fetch("https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -43,7 +43,7 @@ app.post("/crear-suscripcion", async (req, res) => {
     const tokenId = tokenData.creditCardToken.creditCardTokenId;
 
     // 2. Crear suscripción
-    const subscriptionResponse = await fetch("https://api.payulatam.com/payments-api/rest/v4.9/subscriptions", {
+    const subscriptionResponse = await fetch("https://sandbox.api.payulatam.com/payments-api/rest/v4.9/subscriptions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
