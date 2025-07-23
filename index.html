@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,6 +17,7 @@ h2 { text-align: center; color: #333; }
 <form id="subscriptionForm">
     <input type="text" id="fullName" placeholder="Nombre completo" required>
     <input type="email" id="email" placeholder="Correo electrónico" required>
+    <input type="text" id="documentId" placeholder="Documento de Identificación" required>
     <input type="text" id="cardNumber" placeholder="Número de tarjeta" required>
     <input type="text" id="expMonth" placeholder="Mes (MM)" required>
     <input type="text" id="expYear" placeholder="Año (YYYY)" required>
@@ -34,88 +36,25 @@ document.getElementById('subscriptionForm').addEventListener('submit', async fun
     const cardNumber = document.getElementById('cardNumber').value;
     const expMonth = document.getElementById('expMonth').value;
     const expYear = document.getElementById('expYear').value;
+    const cvv = document.getElementById('cvv').value;
+    const documentId = document.getElementById('documentId').value;
 
     document.getElementById('result').innerText = 'Procesando, por favor espera...';
 
     try {
-        // 1. Crear token de tarjeta
-        const tokenResponse = await fetch('https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi', {
+        const response = await fetch('/api/create-subscription', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                language: "es",
-                command: "CREATE_TOKEN",
-                merchant: {
-                    apiKey: "4Vj8eK4rloUd272L48hsrarnUA",
-                    apiLogin: "pRRXKOl8ikMmt9u"
-                },
-                creditCardToken: {
-                    payerId: email,
-                    name: fullName,
-                    identificationNumber: "0000000000",
-                    paymentMethod: "VISA",
-                    number: cardNumber,
-                    expirationDate: expYear + "/" + expMonth
-                }
-            })
+            body: JSON.stringify({ fullName, email, cardNumber, expMonth, expYear, cvv, document: documentId })
         });
 
-        const tokenData = await tokenResponse.json();
-        console.log(tokenData);
-
-        if (!tokenData.creditCardToken || !tokenData.creditCardToken.creditCardTokenId) {
-            document.getElementById('result').innerText = 'Error creando token';
-            return;
-        }
-
-        const tokenId = tokenData.creditCardToken.creditCardTokenId;
-
-        // 2. Crear suscripción
-        const subscriptionResponse = await fetch('https://sandbox.api.payulatam.com/payments-api/rest/v4.9/subscriptions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': 'Basic ' + btoa("pRRXKOl8ikMmt9u" + ":" + "4Vj8eK4rloUd272L48hsrarnUA")
-            },
-            body: JSON.stringify({
-                plan: {
-                    planCode: "CLUB_VIAJEROS_GOLD_SILVER_CTI",
-                    description: "Suscripción mensual CLUB VIAJEROS GOLD SILVER CTI",
-                    accountId: "512321",
-                    interval: "MONTH",
-                    intervalCount: 1,
-                    paymentAttemptsDelay: 1,
-                    maxPaymentAttempts: 3,
-                    maxPendingPayments: 1,
-                    trialDays: 0,
-                    additionalValues: [
-                        { name: "PLAN_VALUE", value: "17850", currency: "COP" }
-                    ]
-                },
-                customer: {
-                    fullName: fullName,
-                    email: email,
-                    creditCards: [
-                        {
-                            token: tokenId,
-                            paymentMethod: "VISA"
-                        }
-                    ]
-                }
-            })
-        });
-
-        const subscriptionData = await subscriptionResponse.json();
-        console.log(subscriptionData);
-
-        if (subscriptionData.id) {
+        const data = await response.json();
+        if (data.id) {
             document.getElementById('result').innerText = '¡Suscripción creada exitosamente (Sandbox)!';
         } else {
-            document.getElementById('result').innerText = 'Error creando suscripción';
+            document.getElementById('result').innerText = 'Error creando suscripción: ' + JSON.stringify(data);
         }
 
     } catch (error) {
