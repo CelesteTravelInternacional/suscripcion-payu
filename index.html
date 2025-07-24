@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Suscripción CLUB VIAJEROS GOLD SILVER CTI</title>
+<style>
+body { font-family: Arial, sans-serif; max-width: 400px; margin: auto; padding: 20px; }
+input, button { width: 100%; padding: 10px; margin: 10px 0; }
+button { background-color: #28a745; color: white; border: none; font-size: 16px; cursor: pointer; }
+h2 { text-align: center; color: #333; }
+</style>
+</head>
+<body>
+<h2>Suscripción: CLUB VIAJEROS GOLD SILVER CTI</h2>
+<p>Monto mensual: <strong>$17.850 COP</strong></p>
+<form id="subscriptionForm">
+    <input type="text" id="fullName" placeholder="Nombre completo" required>
+    <input type="email" id="email" placeholder="Correo electrónico" required>
+    <input type="text" id="documentId" placeholder="Documento de Identificación" required>
+    <input type="text" id="cardNumber" placeholder="Número de tarjeta" required>
+    <input type="text" id="expMonth" placeholder="Mes (MM)" required>
+    <input type="text" id="expYear" placeholder="Año (YYYY)" required>
+    <input type="text" id="cvv" placeholder="CVV" required>
+    <button type="submit">Suscribirme</button>
+</form>
+
+<p id="result"></p>
+
+<script>
+document.getElementById('subscriptionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const cardNumber = document.getElementById('cardNumber').value;
+    const expMonth = document.getElementById('expMonth').value;
+    const expYear = document.getElementById('expYear').value;
+    const cvv = document.getElementById('cvv').value;
+    const documentId = document.getElementById('documentId').value;
+
+    document.getElementById('result').innerText = 'Procesando, por favor espera...';
+
+    try {
+        const response = await fetch('/api/create-subscription', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ fullName, email, cardNumber, expMonth, expYear, cvv, document: documentId })
+        });
+
+        const data = await response.json();
+        if (data.id) {
+            document.getElementById('result').innerText = '¡Suscripción creada exitosamente (Sandbox)!';
+        } else {
+            document.getElementById('result').innerText = 'Error creando suscripción: ' + JSON.stringify(data);
+        }
+
+    } catch (error) {
+        console.error(error);
+        document.getElementById('result').innerText = 'Error en el proceso';
+    }
+});
+</script>
+</body>
+</html>
